@@ -46,3 +46,58 @@ The application is built on a modern, robust, and scalable technology stack. The
 
 The application follows a classic **Client-Server Architecture**. The system is decoupled into two main parts: a frontend client (likely a Single Page Application) and a backend server that exposes a RESTful API.
 
+### Backend Architecture
+
+The backend is structured using a pattern similar to **Model-View-Controller (MVC)**, adapted for an API-only service:
+
+*   **Models:** Defined using Sequelize, these represent the database tables (`User`, `Incident`, `Article`) and contain the business logic for data manipulation.
+*   **Controllers:** These handle the incoming HTTP requests, process input, interact with the models to perform database operations, and send back a response.
+*   **Routes:** These map the API endpoints (e.g., `/api/incidents`) to the corresponding controller functions.
+*   **Middleware:** Functions that execute before the main controller logic, used for tasks like authentication, authorization (RBAC), input validation, and logging.
+
+## 5. Database and Backend Logic
+
+### Database Schema
+
+The database schema is designed to be relational and is managed by Sequelize migrations. The core models include:
+
+*   **Users:** Stores user information, credentials, and roles.
+    *   `id` (PK)
+    *   `name` (STRING)
+    *   `email` (STRING, UNIQUE)
+    *   `passwordHash` (STRING)
+    *   `googleId` (STRING, NULLABLE)
+    *   `role` (ENUM: 'user', 'admin')
+*   **Incidents:** Stores details of user-reported incidents.
+    *   `id` (PK)
+    *   `title` (STRING)
+    *   `description` (TEXT)
+    *   `status` (ENUM: 'reported', 'in_progress', 'resolved')
+    *   `reportedBy` (FK to Users.id)
+*   **Articles:** Stores content for the knowledge base.
+    *   `id` (PK)
+    *   `title` (STRING)
+    *   `content` (TEXT)
+    *   `authorId` (FK to Users.id)
+
+### Important Code Snippets
+
+#### Environment Configuration with `dotenv`
+
+We use `dotenv` to load environment-specific configurations securely. This is one of the first things loaded in the application.
+
+```javascript
+// index.js
+require('dotenv').config();
+
+const express = require('express');
+const app = express();
+
+const PORT = process.env.PORT || 5000;
+
+// Database connection
+const sequelize = require('./config/database');
+
+// ... rest of the app setup
+
+
