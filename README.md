@@ -100,4 +100,79 @@ const sequelize = require('./config/database');
 
 // ... rest of the app setup
 
+// config/database.js
+const { Sequelize } = require('sequelize');
+
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASS,
+  {
+    host: process.env.DB_HOST,
+    dialect: 'postgres', // or 'mysql'
+    logging: false,
+  }
+);
+
+module.exports = sequelize;
+
+// routes/incidentRoutes.js
+const express = require('express');
+const router = express.Router();
+const incidentController = require('../controllers/incidentController');
+const authMiddleware = require('../middleware/authMiddleware');
+
+/**
+ * @swagger
+ * /api/incidents:
+ *   post:
+ *     summary: Report a new cyber incident
+ *     tags: [Incidents]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Incident reported successfully.
+ *       401:
+ *         description: Unauthorized.
+ */
+router.post('/', authMiddleware.protect, incidentController.createIncident);
+
+module.exports = router;
+
+// controllers/authController.js
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+exports.googleLogin = async (req, res) => {
+  const { tokenId } = req.body;
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: tokenId,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const { name, email, sub } = ticket.getPayload();
+    
+    // Logic to find or create a user in the database
+    // and return a JWT for session management.
+    
+  } catch (error) {
+    res.status(400).json({ message: 'Google sign-in failed' });
+  }
+};
+
+
+
+
 
